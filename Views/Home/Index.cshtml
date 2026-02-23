@@ -1,0 +1,219 @@
+﻿@* =============================================================================
+   VIEW: Home/Index.cshtml
+   ICE 1 — Single-page CV. Uses clear section headings for ATS. All content
+   comes from the Model (PortfolioViewModel) passed by HomeController.
+   ============================================================================= *@
+@model GamedeCV.Models.PortfolioViewModel
+@{
+    ViewData["Title"] = Model.FullName;
+}
+
+<a href="#about" class="skip-link">Skip to main content</a>
+
+@* ----- VIEW: Header / Hero — profile picture + active links (LinkedIn, GitHub, etc.) ----- *@
+<header class="hero" id="header">
+    <nav class="nav" aria-label="Main navigation">
+        <a href="#header" class="nav-logo">Portfolio</a>
+        <button class="nav-toggle" aria-label="Toggle menu" type="button"><span></span></button>
+        <ul class="nav-links">
+            <li><a href="#about">About</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#projects">Projects</a></li>
+            @if (Model.Experience?.Count > 0)
+            {
+                <li><a href="#experience">Experience</a></li>
+            }
+            <li><a href="#education">Education</a></li>
+            @if (Model.Certifications?.Count > 0)
+            {
+                <li><a href="#certifications">Certifications</a></li>
+            }
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+    <div class="hero-content">
+        @* Profile picture: add your photo as wwwroot/images/avatar.jpg (or .png) *@
+        <div class="hero-avatar" role="img" aria-label="Profile photo">
+            <img src="@Url.Content("~/images/avatar.jpg")" alt="Profile photo - @Model.FullName" width="180" height="180" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" asp-append-version="true" />
+            <span class="avatar-fallback" style="display:none;">@(Model.FullName.Length >= 2 ? Model.FullName.Substring(0, 2).ToUpperInvariant() : "CV")</span>
+        </div>
+        <h1 class="hero-name">@Model.FullName</h1>
+        <p class="hero-title">@Model.ProfessionalTitle</p>
+        @* Active links: LinkedIn, GitHub, download CV, and other profiles *@
+        <nav class="hero-links" aria-label="Profile links">
+            <a href="@Url.Action("DownloadPdf")" class="hero-link hero-link-download">Download CV (PDF)</a>
+            <a href="@Url.Action("DownloadWord")" class="hero-link hero-link-download">Download CV (Word)</a>
+            @if (!string.IsNullOrEmpty(Model.LinkedInUrl))
+            {
+                <a href="@Model.LinkedInUrl" target="_blank" rel="noopener" class="hero-link">LinkedIn</a>
+            }
+            @if (!string.IsNullOrEmpty(Model.GitHubUrl))
+            {
+                <a href="@Model.GitHubUrl" target="_blank" rel="noopener" class="hero-link">GitHub</a>
+            }
+            @foreach (var link in Model.OtherProfileLinks ?? Enumerable.Empty<GamedeCV.Models.ProfileLink>())
+            {
+                @if (!string.IsNullOrEmpty(link.Url))
+                {
+                    <a href="@link.Url" target="_blank" rel="noopener" class="hero-link">@link.Label</a>
+                }
+            }
+        </nav>
+    </div>
+</header>
+
+<main>
+    @* ----- VIEW: About Me (ICE 1 must-have) ----- *@
+    <section class="section" id="about" aria-labelledby="about-heading">
+        <h2 id="about-heading">About Me</h2>
+        <p>@Model.AboutMe</p>
+    </section>
+
+    @* ----- VIEW: Skills (ICE 1 must-have — ATS heading "Skills") ----- *@
+    <section class="section" id="skills" aria-labelledby="skills-heading">
+        <h2 id="skills-heading">Skills</h2>
+        <div class="skills-grid">
+            @foreach (var group in Model.SkillGroups)
+            {
+                <div class="skill-group">
+                    <h3>@group.Title</h3>
+                    <ul class="skill-tags">
+                        @foreach (var skill in group.Skills)
+                        {
+                            <li>@skill</li>
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+    </section>
+
+    @* ----- VIEW: Projects (ICE 1 must-have — at least one GitHub project) ----- *@
+    <section class="section" id="projects" aria-labelledby="projects-heading">
+        <h2 id="projects-heading">Projects</h2>
+        <div class="project-list">
+            @foreach (var project in Model.Projects)
+            {
+                <article class="project-card">
+                    <h3>@project.Name</h3>
+                    <p class="project-desc">@project.Description</p>
+                    <p class="project-stack">Tech stack: @project.TechStack</p>
+                    <a href="@project.GitHubUrl" class="project-link" target="_blank" rel="noopener">View on GitHub</a>
+                    @if (!string.IsNullOrEmpty(project.DemoUrl))
+                    {
+                        <span> · </span>
+                        <a href="@project.DemoUrl" class="project-link" target="_blank" rel="noopener">Live demo</a>
+                    }
+                </article>
+            }
+        </div>
+    </section>
+
+    @* ----- VIEW: Experience (ICE 1 optional) ----- *@
+    @if (Model.Experience?.Count > 0)
+    {
+        <section class="section" id="experience" aria-labelledby="experience-heading">
+            <h2 id="experience-heading">Experience</h2>
+            <div class="experience-list">
+                @foreach (var item in Model.Experience)
+                {
+                    <div class="experience-item">
+                        <h3>@item.Role — @item.Company</h3>
+                        <p class="period">@item.Period</p>
+                        @if (!string.IsNullOrEmpty(item.Description))
+                        {
+                            <p>@item.Description</p>
+                        }
+                    </div>
+                }
+            </div>
+        </section>
+    }
+
+    @* ----- VIEW: Education (degree + high school) ----- *@
+    <section class="section" id="education" aria-labelledby="education-heading">
+        <h2 id="education-heading">Education</h2>
+        <div class="education-item">
+            <h3>@Model.Degree</h3>
+            <p class="institution">@Model.Institution</p>
+            <p class="graduation">Expected graduation: @Model.ExpectedGraduation</p>
+        </div>
+        @if (!string.IsNullOrEmpty(Model.HighSchoolName))
+        {
+            <div class="education-item education-item-highschool">
+                <h3>High School</h3>
+                <p class="institution">@Model.HighSchoolName</p>
+                @if (!string.IsNullOrEmpty(Model.HighSchoolGraduationYear))
+                {
+                    <p class="graduation">Graduated: @Model.HighSchoolGraduationYear</p>
+                }
+            </div>
+        }
+    </section>
+
+    @* ----- VIEW: Certifications (ICE 1 optional) ----- *@
+    @if (Model.Certifications?.Count > 0)
+    {
+        <section class="section" id="certifications" aria-labelledby="certifications-heading">
+            <h2 id="certifications-heading">Certifications</h2>
+            <ul class="cert-list">
+                @foreach (var cert in Model.Certifications)
+                {
+                    <li>
+                        @if (!string.IsNullOrEmpty(cert.Url))
+                        {
+                            <a href="@cert.Url" target="_blank" rel="noopener" class="project-link">@cert.Name</a>
+                        }
+                        else
+                        {
+                            <strong>@cert.Name</strong>
+                        }
+                        @if (!string.IsNullOrEmpty(cert.Issuer))
+                        {
+                            <span> — @cert.Issuer</span>
+                        }
+                        @if (!string.IsNullOrEmpty(cert.Year))
+                        {
+                            <span> (@cert.Year)</span>
+                        }
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+
+    @* ----- VIEW: Contact — email + active profile links (LinkedIn, GitHub, etc.) ----- *@
+    <section class="section" id="contact" aria-labelledby="contact-heading">
+        <h2 id="contact-heading">Contact</h2>
+        <p>Available for graduate roles and internships.</p>
+        <ul class="contact-links">
+            <li><a href="mailto:@Model.Email">@Model.Email</a></li>
+            @if (!string.IsNullOrEmpty(Model.LinkedInUrl))
+            {
+                <li><a href="@Model.LinkedInUrl" target="_blank" rel="noopener">LinkedIn</a></li>
+            }
+            @if (!string.IsNullOrEmpty(Model.GitHubUrl))
+            {
+                <li><a href="@Model.GitHubUrl" target="_blank" rel="noopener">GitHub</a></li>
+            }
+            @foreach (var link in Model.OtherProfileLinks ?? Enumerable.Empty<GamedeCV.Models.ProfileLink>())
+            {
+                @if (!string.IsNullOrEmpty(link.Url))
+                {
+                    <li><a href="@link.Url" target="_blank" rel="noopener">@link.Label</a></li>
+                }
+            }
+            <li><a href="@Url.Action("DownloadPdf")">Download CV (PDF)</a></li>
+            <li><a href="@Url.Action("DownloadWord")">Download CV (Word)</a></li>
+        </ul>
+        @if (!string.IsNullOrEmpty(Model.Interests))
+        {
+            <p class="interests">@Model.Interests</p>
+        }
+        <p class="contact-note">References available on request.</p>
+    </section>
+</main>
+
+<footer class="footer">
+    <p>&copy; <span id="year"></span> @Model.FullName. Hosted on Azure.</p>
+</footer>
