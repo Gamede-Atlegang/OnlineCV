@@ -9,6 +9,7 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using WpDocument = DocumentFormat.OpenXml.Wordprocessing.Document;
+using Text = DocumentFormat.OpenXml.Wordprocessing.Text;
 
 namespace GamedeCV.Services
 {
@@ -171,3 +172,4 @@ namespace GamedeCV.Services
             return stream.ToArray();
         }
     }
+}
